@@ -7,15 +7,13 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
+import { CliService } from './app/cli/cli.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
-  app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3333;
-  await app.listen(port, () => {
-    Logger.log('Listening at http://localhost:' + port + '/' + globalPrefix);
-  });
+  const appContext = await NestFactory.createApplicationContext(AppModule);
+
+  const cli = await appContext.resolve(CliService)
+  await cli.run(process.argv)
 }
 
-bootstrap();
+bootstrap().catch(error => Logger.error(`An global uncached error occurred: ${JSON.stringify(error)}`));
